@@ -29,4 +29,5 @@ Client request either of the above end point with the corresponding parameters. 
 INSTALL & RUN
 -----------
 1. npm install
-2. coffee app
+2. copy config.sample.coffee to config.coffee and modify accordingly
+3. coffee app
