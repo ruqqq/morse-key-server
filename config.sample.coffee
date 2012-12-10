@@ -5,7 +5,7 @@ config =
 		user: ""
 		password: ""
 		database_prefix: "morse-key-server-"
-	port: 8031
+	port: 80
 	force_disable_compression: false
 	debug: false
 	rsa_padding: "RSA_PKCS1_PADDING" # RSA_PKCS1_OAEP_PADDING
