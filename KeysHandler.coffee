@@ -121,15 +121,19 @@ class Keys
 					@_getPubKey recipient_id, (err, recipientPubKey) =>
 						if recipientPubKey.pubkey
 							if callback then callback recipientPubKey, null
-						else
+						else if !err
 							return @App.sendError req, res, 400, "Invalid ids provided"
+						else
+							return @App.sendError req, res, 500, "Error while contacting Morse server"
 
 				getGroupPubKey = (group_id, callback) =>
 					@_getGroupPubKey group_id, (err, groupPubKey) =>
 						if groupPubKey.pubkey
 							if callback then callback null, groupPubKey
-						else
+						else if !err
 							return @App.sendError req, res, 400, "Invalid ids provided"
+						else
+							return @App.sendError req, res, 500, "Error while contacting Morse server"
 
 				getMsgKey = (recipientPubKey, groupPubKey) =>
 					#console.log "isSender: #{isSender}"
