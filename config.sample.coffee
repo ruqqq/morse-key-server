@@ -9,5 +9,6 @@ config =
 	force_disable_compression: false
 	debug: false
 	rsa_padding: "RSA_PKCS1_PADDING" # RSA_PKCS1_OAEP_PADDING
+	password_length: 24
 
 module.exports = config

@@ -10,7 +10,7 @@ class Keys
 		@App.server.get "/", @getKey
 
 	_generateRandomPassword: () =>
-		return dcrypt.random.randomBytes(24).toString("base64")
+		return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
 
 	_generateUniqueToken: () =>
 		token = uuid.v1()
