@@ -28,6 +28,7 @@ Client request either of the above end point with the corresponding parameters. 
 
 INSTALL & RUN
 -----------
-1. npm install
-2. copy config.sample.coffee to config.coffee and modify accordingly
-3. coffee app
+1. git clone https://github.com/ruqqq/morse-key-server.git
+2. npm install
+3. copy config.sample.coffee to config.coffee and modify accordingly
+4. coffee app
