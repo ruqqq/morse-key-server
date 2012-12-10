@@ -10,6 +10,7 @@
         }
     ],
     "dependencies": {
+        "coffee-script": "*",
         "node-uuid": "*",
         "crypto": "*",
         "dcrypt": "https://github.com/ruqqq/dcrypt/archive/master.tar.gz",
