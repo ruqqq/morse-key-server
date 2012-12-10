@@ -17,5 +17,8 @@
         "dcrypt": "https://github.com/ruqqq/dcrypt/archive/master.tar.gz",
         "nano": "*",
         "restify": "*"
+    },
+    "scripts": {
+        "start": "coffee app"
     }
 }
