@@ -45,7 +45,7 @@ class Keys
 		if !req.query.sender_id
 			return @App.sendError req, res, 400, "Invalid ids provided"
 
-		if req.query.recipient_id and req.query.group_id
+		if !req.query.recipient_id and !req.query.group_id
 			return @App.sendError req, res, 400, "Invalid ids provided"
 
 		if !req.query.me or (!req.query.sender_id is req.query.me and !req.query.recipient_id is req.query.me)
