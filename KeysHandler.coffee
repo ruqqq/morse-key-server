@@ -37,10 +37,10 @@ class Keys
 			if callback then callback err, obj
 
 	getPackage: (req, res, next) =>
-		if req.query.package_id
-			@Packages.findOne "package_#{req.query.package_id}", (err, reply) =>
+		if req.query.id
+			@Packages.findOne "package_#{req.query.id}", (err, reply) =>
 				if reply
-					@Packages.del "package_#{req.query.package_id}"
+					@Packages.del "package_#{req.query.id}"
 					return @App.compressIfRequested req, res, reply
 				else
 					return @App.sendError req, res, 400, "Invalid package token provided"
