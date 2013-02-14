@@ -17,7 +17,7 @@ config =
 	debug: false
 	# RSA padding method to use
 	# !!! THIS SHOULDN'T BE CHANGED UNLESS MORSE SERVER CHANGE !!!
-	rsa_padding: "RSA_PKCS1_PADDING" # RSA_PKCS1_OAEP_PADDING
+	rsa_padding: "pkcs1" # oaep
 	# Key/Password length to generate
 	password_length: 24
 
