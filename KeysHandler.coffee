@@ -145,9 +145,6 @@ class Keys
 			if req.query.group_id
 				row.group_id = req.query.group_id
 
-
-			packageToken = keypair.encrypt new Buffer(packageToken).toString("base64"), "utf8", "base64"
-
 			keypair = RSA.createRsaKeypair
 				publicKey: senderPubKey
 				padding: @App.config.rsa_padding
