@@ -1,7 +1,6 @@
 uuid = require "node-uuid"
 crypto = require "crypto"
 RSA = require "nrsa"
-rbytes = require "rbytes"
 
 class Keys
 	constructor: (@App) ->
@@ -13,7 +12,7 @@ class Keys
 		@App.server.get "/createKey", @createKey
 
 	_generateRandomPassword: () =>
-		return rbytes.randomBytes @App.config.password_length
+		return crypto.randomBytes @App.config.password_length
 		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
 
 
