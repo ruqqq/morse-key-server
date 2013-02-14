@@ -12,7 +12,7 @@ class Keys
 		@App.server.get "/createKey", @createKey
 
 	_generateRandomPassword: () =>
-		return crypto.randomBytes @App.config.password_length
+		return crypto.randomBytes(@App.config.password_length).toString("base64")
 		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
 
 
