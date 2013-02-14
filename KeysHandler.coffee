@@ -15,12 +15,12 @@ class Keys
 		password = ""
 		random = crypto.randomBytes(@App.config.password_length)
 		for buf in random
-	    	c = buf # the character in range 0 to 255
-	    	c2 = Math.floor(c / 2.74) # transform to range 0 - 93 and round down
-	    	c3 = c2 + 33 # ASCII to range from 33 to 126
-	    	# now convert the transformed character code to its string
-	    	# value and append to the verification code
-	    	password += String.fromCharCode c3
+			c = buf # the character in range 0 to 255
+			c2 = Math.floor(c / 2.74) # transform to range 0 - 93 and round down
+			c3 = c2 + 33 # ASCII to range from 33 to 126
+			# now convert the transformed character code to its string
+			# value and append to the verification code
+			password += String.fromCharCode c3
 
 	    return password
 		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
@@ -45,6 +45,12 @@ class Keys
 			#console.log JSON.stringify obj
 			if callback then callback err, obj
 
+	# GET /getPackage
+	# params (query):
+	# 	id: id of package to retrieve
+	#
+	# notes: key_encrypted returned will need to be decrypted with the requester private key
+
 	getPackage: (req, res, next) =>
 		if req.query.id
 			@Packages.findOne "package_#{req.query.id}", (err, reply) =>
@@ -55,6 +61,13 @@ class Keys
 					return @App.sendError req, res, 400, "Invalid package token provided"
 		else
 			return @App.sendError req, res, 400, "Invalid package token provided"
+
+	# GET /requestKey
+	# params (query):
+	# 	id: id of key to retrieve
+	#	me: hashed id of the user (can be sender, recipient or group)
+	#
+	# notes: package_id_encrypted returned will need to be decrypted with the requester private key
 
 	getKey: (req, res, next) =>
 		if !req.query.id
@@ -120,6 +133,15 @@ class Keys
 			getGroupPubKey req.query.me, getMsgKey
 		else
 			getUserPubKey req.query.me, getMsgKey
+
+	# GET /createKey
+	# params (query):
+	# 	sender_id: the hashed sender id
+	#	recipient_id: the hashed recipient_id
+	#	(or) group_id: the hashed group_id
+	#	me: the hashed id of requester (need to be one of the above)
+	#
+	# notes: package_id_encrypted returned will need to be decrypted with the requester private key
 
 	createKey: (req, res, next) =>
 		if !req.query.sender_id
