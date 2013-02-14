@@ -15,6 +15,7 @@
         "node-uuid": "*",
         "crypto": "*",
         "nrsa": "*",
+        "rbytes": "*",
         "nano": "*",
         "restify": "*"
     },
