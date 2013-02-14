@@ -22,7 +22,7 @@ class Keys
 			# value and append to the verification code
 			password += String.fromCharCode c3
 
-	    return password
+		return password
 		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
 
 	_generateUniqueToken: () =>
