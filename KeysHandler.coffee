@@ -12,9 +12,18 @@ class Keys
 		@App.server.get "/createKey", @createKey
 
 	_generateRandomPassword: () =>
-		return crypto.randomBytes(@App.config.password_length).toString("base64")
-		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
+		password = ""
+		random = crypto.randomBytes(@App.config.password_length)
+		for buf in buffer
+	    	c = buf # the character in range 0 to 255
+	    	c2 = Math.floor(c / 2.74) # transform to range 0 - 93 and round down
+	    	c3 = c2 + 33 # ASCII to range from 33 to 126
+	    	# now convert the transformed character code to its string
+	    	# value and append to the verification code
+	    	password += String.fromCharCode c3
 
+	    return password
+		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
 
 	_generateUniqueToken: () =>
 		token = uuid.v1()
