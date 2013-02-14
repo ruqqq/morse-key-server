@@ -19,6 +19,6 @@ config =
 	# !!! THIS SHOULDN'T BE CHANGED UNLESS MORSE SERVER CHANGE !!!
 	rsa_padding: "pkcs1" # oaep
 	# Key/Password length to generate
-	password_length: 24
+	password_length: 32
 
 module.exports = config
