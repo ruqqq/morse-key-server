@@ -1,6 +1,6 @@
 {
     "name": "morse-key-server",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "author": "Faruq Rasid <me@ruqqq.sg>",
     "description": "Morse Key Server",
     "contributors": [
@@ -14,7 +14,7 @@
         "coffee-script": "*",
         "node-uuid": "*",
         "crypto": "*",
-        "dcrypt": "https://github.com/ruqqq/dcrypt/archive/master.tar.gz",
+        "nrsa": "*",
         "nano": "*",
         "restify": "*"
     },

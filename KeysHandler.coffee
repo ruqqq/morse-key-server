@@ -1,16 +1,21 @@
 uuid = require "node-uuid"
 crypto = require "crypto"
-dcrypt = require "dcrypt"
+RSA = require "nrsa"
+rbytes = require "rbytes"
 
 class Keys
 	constructor: (@App) ->
 		@Keys = new (require "./keys") @App
 		@Packages = new (require "./packages") @App
 
-		@App.server.get "/", @getKey
+		@App.server.get "/requestKey", @getKey
+		@App.server.get "/getPackage", @getPackage
+		@App.server.get "/createKey", @createKey
 
 	_generateRandomPassword: () =>
-		return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
+		return rbytes.randomBytes @App.config.password_length
+		#return dcrypt.random.randomBytes(@App.config.password_length).toString("base64")
+
 
 	_generateUniqueToken: () =>
 		token = uuid.v1()
@@ -32,7 +37,7 @@ class Keys
 			#console.log JSON.stringify obj
 			if callback then callback err, obj
 
-	getKey: (req, res, next) =>
+	getPackage: (req, res, next) =>
 		if req.query.package_id
 			@Packages.findOne "package_#{req.query.package_id}", (err, reply) =>
 				if reply
@@ -40,8 +45,75 @@ class Keys
 					return @App.compressIfRequested req, res, reply
 				else
 					return @App.sendError req, res, 400, "Invalid package token provided"
-			return
+		else
+			return @App.sendError req, res, 400, "Invalid package token provided"
 
+	getKey: (req, res, next) =>
+		if !req.query.id
+			return @App.sendError req, res, 400, "Invalid id provided"
+
+		if !req.query.me
+			return @App.sendError req, res, 400, "Invalid user provided"
+
+		packageToken = @_generateUniqueToken()
+
+		retrieveMsgKey = (_id, me, pubkey) =>
+			@Keys.findOne _id, (err, data) =>
+				if data and (data.sender_id is me or data.recipient_id is me or data.group_id is me)
+					result =
+						id: data._id
+						sender_id: data.sender_id
+					
+					if data.recipient_id
+						result.recipient_id = data.recipient_id
+					if data.group_id
+						result.group_id = data.group_id
+
+					if data.sender_id is me
+						result.key_encrypted = data.senderkey
+					else
+						result.key_encrypted = data.recipientkey
+
+					result.status = data.status
+
+					@Packages.insert "package_#{packageToken}", result
+					keypair = RSA.createRsaKeypair
+						publicKey: pubkey
+						padding: @App.config.rsa_padding
+					packageToken = keypair.encrypt new Buffer(packageToken).toString("base64"), "utf8", "base64"
+					return @App.compressIfRequested req, res, {package_id_encrypted: packageToken}
+				else if err
+					return @App.sendError req, res, 500, "Error generating key request"
+				else
+					return @App.sendError req, res, 404, "Key not found"
+
+		getUserPubKey = (user_id, callback) =>
+			@_getPubKey user_id, (err, userPubKey) =>
+				if userPubKey.pubkey
+					if callback then callback userPubKey, null
+				else if !err
+					return @App.sendError req, res, 400, "Invalid ids provided"
+				else
+					return @App.sendError req, res, 500, "Error while contacting Morse server"
+
+		getGroupPubKey = (group_id, callback) =>
+			@_getGroupPubKey group_id, (err, groupPubKey) =>
+				if groupPubKey.pubkey
+					if callback then callback null, groupPubKey
+				else if !err
+					return @App.sendError req, res, 400, "Invalid ids provided"
+				else
+					return @App.sendError req, res, 500, "Error while contacting Morse server"
+
+		getMsgKey = (pubkey) =>
+			retrieveMsgKey req.query.id, req.query.me, pubkey
+
+		if req.query.is_group
+			getGroupPubKey req.query.me, getMsgKey
+		else
+			getUserPubKey req.query.me, getMsgKey
+
+	createKey: (req, res, next) =>
 		if !req.query.sender_id
 			return @App.sendError req, res, 400, "Invalid ids provided"
 
@@ -64,55 +136,54 @@ class Keys
 			if req.query.group_id
 				conditions.group_id = req.query.group_id
 
-			@Keys.findOneWith conditions, (err, data) =>
-				if data
+			password = @_generateRandomPassword()
+			
+			row = @Keys.schema
+			row.sender_id = req.query.sender_id
+			
+			if req.query.recipient_id
+				row.recipient_id = req.query.recipient_id
+			if req.query.group_id
+				row.group_id = req.query.group_id
+
+
+			packageToken = keypair.encrypt new Buffer(packageToken).toString("base64"), "utf8", "base64"
+
+			keypair = RSA.createRsaKeypair
+				publicKey: senderPubKey
+				padding: @App.config.rsa_padding
+			row.senderkey = keypair.encrypt new Buffer(password).toString("base64"), "utf8", "base64"
+			if recipientPubKey
+				keypair = RSA.createRsaKeypair
+					publicKey: recipientPubKey
+					padding: @App.config.rsa_padding
+				row.recipientkey = keypair.encrypt new Buffer(password).toString("base64"), "utf8", "base64"
+			else if groupPubKey
+				keypair = RSA.createRsaKeypair
+					publicKey: groupPubKey
+					padding: @App.config.rsa_padding
+				row.recipientkey = keypair.encrypt new Buffer(password).toString("base64"), "utf8", "base64"
+			
+			@Keys.insert null, row, (err, _result) =>
+				if _result
 					result =
-						sender_id: data.sender_id
-					
-					if data.recipient_id
-						result.recipient_id = data.recipient_id
-					if data.group_id
-						result.group_id = data.group_id
+						id: _result._id
+						sender_id: req.query.sender_id
 
-					result.key_encrypted = if isSender then data.senderkey else data.recipientkey
-					result.status = data.status
-
-					@Packages.insert "package_#{packageToken}", result
-					packageToken = dcrypt.rsa.encrypt(mePubKey, new Buffer(packageToken).toString("base64"), @App.config.rsa_padding, 'base64')
-					@App.compressIfRequested req, res, {package_id_encrypted: packageToken}
-				else
-					password = @_generateRandomPassword()
-					
-					row = @Keys.schema
-					row.sender_id = req.query.sender_id
-					
 					if req.query.recipient_id
-						row.recipient_id = req.query.recipient_id
+						result.recipient_id = req.query.recipient_id
 					if req.query.group_id
-						row.group_id = req.query.group_id
-
-					row.senderkey = dcrypt.rsa.encrypt(senderPubKey, new Buffer(password).toString("base64"), @App.config.rsa_padding, 'base64')
-					if recipientPubKey
-						row.recipientkey = dcrypt.rsa.encrypt(recipientPubKey, new Buffer(password).toString("base64"), @App.config.rsa_padding, 'base64')
-					if groupPubKey
-						row.recipientkey = dcrypt.rsa.encrypt(groupPubKey, new Buffer(password).toString("base64"), @App.config.rsa_padding, 'base64')
+						result.group_id = req.query.group_id
 					
-					@Keys.insert null, row, (err, _result) =>
-						if _result
-							result =
-								sender_id: req.query.sender_id
-
-							if req.query.recipient_id
-								result.recipient_id = req.query.recipient_id
-							if req.query.group_id
-								result.group_id = req.query.group_id
-							
-							result.key_encrypted = if isSender then row.senderkey else row.recipientkey
-							@Packages.insert "package_#{packageToken}", result
-							packageToken = dcrypt.rsa.encrypt(mePubKey, new Buffer(packageToken).toString("base64"), @App.config.rsa_padding, 'base64')
-							@App.compressIfRequested req, res, {package_id_encrypted: packageToken}
-						else
-							return @App.sendError req, res, 400, "Error while generating key"
+					result.key_encrypted = if isSender then row.senderkey else row.recipientkey
+					@Packages.insert "package_#{packageToken}", result
+					keypair = RSA.createRsaKeypair
+						publicKey: mePubKey
+						padding: @App.config.rsa_padding
+					packageToken = keypair.encrypt new Buffer(packageToken).toString("base64"), "utf8", "base64"
+					return @App.compressIfRequested req, res, {package_id_encrypted: packageToken}
+				else
+					return @App.sendError req, res, 500, "Error while generating key"
 
 		@_getPubKey req.query.sender_id, (err, senderPubKey) =>
 			if senderPubKey
