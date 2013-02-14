@@ -14,7 +14,7 @@ class Keys
 	_generateRandomPassword: () =>
 		password = ""
 		random = crypto.randomBytes(@App.config.password_length)
-		for buf in buffer
+		for buf in random
 	    	c = buf # the character in range 0 to 255
 	    	c2 = Math.floor(c / 2.74) # transform to range 0 - 93 and round down
 	    	c3 = c2 + 33 # ASCII to range from 33 to 126
