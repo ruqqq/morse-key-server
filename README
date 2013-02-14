@@ -7,24 +7,38 @@ This implementation uses CouchDB as the data layer.
 
 URL POINTS
 -----------
-Request Key (through generating package):
-http://localhost:port/?sender_id=###&recipient_id=###&me=###
+Create Key:
+http://localhost:port/createKey?sender_id=###&recipient_id=###&me=###
 						--or--
-http://localhost:port/?sender_id=###&group_id=###&me=###
+http://localhost:port/createKey?sender_id=###&group_id=###&me=###
+
+Request Key (through generating package):
+http://localhost:port/requestKey?id=###&me=###
 
 Retrieve Package:
-http://localhost:port/?package_id=###
+http://localhost:port/getPackage?id=###
+
+KEY GENERATION COMPLEXITY
+-----------
+Current implementation generates a key of length 32 made up randomly from a dictionary of 93 characters. That is 93^32 possible combinations.
 
 SERVER FLOW
 -----------
-Client request either of the above end point with the corresponding parameters. Sender_id, recipient_id and me are hashed ids of the user and only group_id is NOT hashed (at least for now).
+Client request either of the above end point with the corresponding parameters. Sender_id, recipient_id, group_id and me are hashed ids.
 
-1. Server contacts Main server to check for ids validity and retrieve the required public keys.
-2. Server generates a key (random bytes of a predefined length base64-ed) and encrypt it with the requester public key
+1. Server contacts Main server to check for ids validity and retrieve the required public keys
+2. Server generates a key (should be as random as possible) and encrypt it with the requester public key
 3. Server store this encrypted key in database along with sender_id and recipient_id/group_id so that the key remain consistent
 4. Server generate a package with the key and relevant hashed ids along with package_id which is encrypted with the public key and send to requester
-5. Requester decrypts the package_id_encrypted and retrieves the package
+5. Requester decrypts the package_id_encrypted and retrieves the package (this also destroys the package on server side)
 6. Decrypted key_encrypted field in package is the generated key to be used for AES (or other) encryption
+
+To retrieve an existing key:
+
+1. Server checks if specified key id is valid and the requester is either the sender, recipient or belong to a group
+2. Server generate a package with the key and relevant hashed ids along with package_id which is encrypted with requester public key and send to requester
+3. Requester decrypts the package_id_encrypted and retrieves the package (this also destroys the package on server side)
+4. Decrypted key_encrypted field in package is the generated key to be used for AES (or other) encryption
 
 INSTALL & RUN
 -----------
