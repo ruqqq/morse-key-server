@@ -56,6 +56,7 @@ class Keys
 			@Packages.findOne "package_#{req.query.id}", (err, reply) =>
 				if reply
 					@Packages.del "package_#{req.query.id}"
+					delete reply._rev
 					return @App.compressIfRequested req, res, reply
 				else
 					return @App.sendError req, res, 400, "Invalid package token provided"
@@ -194,7 +195,7 @@ class Keys
 			@Keys.insert null, row, (err, _result) =>
 				if _result
 					result =
-						id: _result._id
+						keyid: _result.id
 						sender_id: req.query.sender_id
 
 					if req.query.recipient_id
