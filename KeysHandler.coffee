@@ -100,7 +100,7 @@ class Keys
 
 					@Packages.insert "package_#{packageToken}", result
 					keypair = RSA.createRsaKeypair
-						publicKey: pubkey
+						publicKey: pubkey.pubkey
 						padding: @App.config.rsa_padding
 					packageToken = keypair.encrypt new Buffer(packageToken).toString("base64"), "utf8", "base64"
 					return @App.compressIfRequested req, res, {package_id_encrypted: packageToken}
