@@ -84,7 +84,7 @@ class Keys
 			@Keys.findOne _id, (err, data) =>
 				if data and (data.sender_id is me or data.recipient_id is me or data.group_id is me)
 					result =
-						id: data._id
+						keyid: data._id
 						sender_id: data.sender_id
 					
 					if data.recipient_id
