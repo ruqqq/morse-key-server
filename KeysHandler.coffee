@@ -67,6 +67,7 @@ class Keys
 	# params (query):
 	# 	id: id of key to retrieve
 	#	me: hashed id of the user (can be sender, recipient or group)
+	#	is_group: if me is a group pubkey set this to 1
 	#
 	# notes: package_id_encrypted returned will need to be decrypted with the requester private key
 
